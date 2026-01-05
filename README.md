@@ -2,9 +2,52 @@
 
 پنل مدیریت حرفه‌ای VPN برای Xray-core با قابلیت‌های پیشرفته برای دور زدن فیلترینگ شدید و سرعت بالا.
 
-> **نکته**: برای راهنمای کامل آپلود به GitHub، فایل `GITHUB_SETUP.md` را مطالعه کنید.
+## ⚡ نصب سریع (یک دستور)
 
-## ویژگی‌ها
+```bash
+curl -fsSL https://raw.githubusercontent.com/rootitazam/rootitvpn/main/install.sh | bash
+```
+
+یا:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/rootitazam/rootitvpn/main/install.sh | bash
+```
+
+**این اسکریپت به صورت خودکار:**
+- ✅ Docker و Docker Compose را نصب می‌کند
+- ✅ پروژه را از GitHub کلون می‌کند
+- ✅ فایل `.env` را با تنظیمات پیش‌فرض ایجاد می‌کند
+- ✅ GeoIP/Geosite را دانلود می‌کند
+- ✅ سرویس‌ها را راه‌اندازی می‌کند
+
+## 📋 نصب دستی
+
+### پیش‌نیازها
+
+- Ubuntu 22.04 LTS (یا Debian 11+)
+- دسترسی root
+
+### مراحل نصب
+
+```bash
+# 1. دانلود اسکریپت نصب
+wget https://raw.githubusercontent.com/rootitazam/rootitvpn/main/install.sh
+
+# 2. اجرای اسکریپت
+chmod +x install.sh
+sudo ./install.sh
+```
+
+یا اگر از قبل پروژه را کلون کرده‌اید:
+
+```bash
+cd /opt/rootitvpn
+chmod +x install.sh
+sudo ./install.sh
+```
+
+## 🚀 ویژگی‌ها
 
 - ✅ مدیریت کاربران (CRUD) با ردیابی مصرف داده و تاریخ انقضا
 - ✅ مانیتورینگ پیشرفته: کاربران آنلاین، Device Fingerprints، Domain Sniffing (SNI logging)
@@ -15,87 +58,119 @@
 - ✅ چرخش خودکار تنظیمات Reality
 - ✅ تولید لینک اشتراک‌گذاری برای v2rayNG، Shadowrocket، Nekoray
 - ✅ Routing Rules: IP های ایران و دامنه‌های .ir به صورت DIRECT
+- ✅ تنظیم Server IP از پنل گرافیکی
 
-## ساختار پروژه
+## 📁 ساختار پروژه
 
 ```
 rootitvpn/
 ├── backend/          # FastAPI Backend
 ├── frontend/         # React Frontend
 ├── xray/            # Xray Configuration
+├── install.sh       # اسکریپت نصب خودکار
 └── docker-compose.yml
 ```
 
-## نصب و راه‌اندازی
+## 🔧 تنظیمات اولیه
 
-### پیش‌نیازها
+بعد از نصب:
 
-- Docker & Docker Compose
-- Ubuntu 22.04 LTS (برای سرور)
+1. **وارد پنل شوید:**
+   - آدرس: `http://YOUR_SERVER_IP:3000`
+   - Username: `admin`
+   - Password: (در فایل `.env` یا خروجی نصب نمایش داده می‌شود)
 
-### 1. کلون کردن پروژه
+2. **تغییر رمز عبور:**
+   - بعد از اولین ورود، رمز عبور admin را تغییر دهید
+
+3. **تنظیم Server IP:**
+   - به بخش "تنظیمات" بروید
+   - Server IP را بررسی/تنظیم کنید
+
+4. **تنظیمات Reality:**
+   - Reality Dest و Server Names را بررسی کنید
+
+5. **ایجاد کاربر:**
+   - به بخش "مدیریت کاربران" بروید
+   - کاربر جدید ایجاد کنید
+   - لینک اشتراک‌گذاری را دریافت کنید
+
+## 🔥 باز کردن Firewall
 
 ```bash
-git clone <repository-url>
-cd rootitvpn
+# نصب UFW
+sudo apt install -y ufw
+
+# باز کردن پورت‌ها
+sudo ufw allow 22/tcp    # SSH
+sudo ufw allow 3000/tcp  # Frontend
+sudo ufw allow 8000/tcp  # Backend API
+sudo ufw allow 443/tcp   # Xray VPN
+sudo ufw allow 8080/tcp  # Xray gRPC
+
+# فعال‌سازی
+sudo ufw enable
 ```
 
-### 2. تنظیم Environment Variables
+## 📝 دستورات مفید
 
 ```bash
-cp .env.example .env
-# ویرایش .env و تنظیم مقادیر مورد نیاز
-```
+# مشاهده لاگ‌ها
+docker-compose logs -f
 
-### 3. دانلود فایل‌های GeoIP/Geosite (اختیاری)
+# راه‌اندازی مجدد
+docker-compose restart
 
-```bash
-chmod +x xray/download-geo.sh
-./xray/download-geo.sh
-```
+# توقف سرویس‌ها
+docker-compose down
 
-### 4. نصب Xray-core روی سرور (اگر از Docker استفاده نمی‌کنید)
-
-```bash
-chmod +x xray/install.sh
-sudo ./xray/install.sh
-```
-
-### 5. راه‌اندازی با Docker Compose
-
-```bash
+# راه‌اندازی مجدد
 docker-compose up -d
+
+# بررسی وضعیت
+docker-compose ps
+
+# مشاهده لاگ یک سرویس خاص
+docker-compose logs -f backend
+docker-compose logs -f frontend
+docker-compose logs -f xray
 ```
 
-### 6. دسترسی به پنل
+## 🔄 به‌روزرسانی
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+```bash
+cd /opt/rootitvpn
+git pull
+docker-compose down
+docker-compose up -d --build
+```
 
-## تنظیمات اولیه
-
-1. وارد پنل شوید با اطلاعات admin از `.env`
-2. تنظیمات Reality را پیکربندی کنید
-3. کاربران را ایجاد کنید
-4. لینک‌های اشتراک‌گذاری را تولید کنید
-
-## تکنولوژی‌ها
+## 🛠️ تکنولوژی‌ها
 
 - **Backend**: Python 3.11, FastAPI, SQLAlchemy, SQLite
 - **Frontend**: React, Tailwind CSS, Vite
 - **Core**: Xray-core (Latest)
 - **Communication**: gRPC
+- **Containerization**: Docker & Docker Compose
 
-## امنیت
+## 🔒 امنیت
 
 - Session-based authentication
 - Password hashing با bcrypt
 - CSRF protection
 - Rate limiting
+- Environment variables برای اطلاعات حساس
 
-## مجوز
+## 📄 مجوز
 
 این پروژه برای استفاده شخصی و تجاری آزاد است.
 
-# rootitvpn
+## 🆘 پشتیبانی
+
+برای مشکلات و سوالات:
+- Issues: https://github.com/rootitazam/rootitvpn/issues
+- Repository: https://github.com/rootitazam/rootitvpn
+
+---
+
+**ساخته شده با ❤️ برای دور زدن فیلترینگ**
