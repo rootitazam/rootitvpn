@@ -123,7 +123,7 @@
       {
         "type": "field",
         "domain": [
-          "geosite:ir"
+          "regexp:^.*\\.ir$"
         ],
         "outboundTag": "direct"
       },
