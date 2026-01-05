@@ -17,9 +17,10 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - SERVER_IP=${SERVER_IP:-}
-    depends_on:
-      xray:
-        condition: service_healthy
+    # Temporarily disabled Xray dependency to allow backend to start even if Xray has issues
+    # depends_on:
+    #   xray:
+    #     condition: service_started
     networks:
       - rootitvpn-network
     restart: unless-stopped
@@ -69,12 +70,12 @@ services:
       - rootitvpn-network
     restart: unless-stopped
     command: ["xray", "-config", "/etc/xray/config.json"]
-    healthcheck:
-      test: ["CMD-SHELL", "xray version || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+    # healthcheck:
+    #   test: ["CMD-SHELL", "xray version || exit 1"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 60s
 
 volumes:
   backend_data:
