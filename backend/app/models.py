@@ -1,5 +1,4 @@
 from sqlalchemy import Column, String, Integer, BigInteger, Boolean, DateTime, ForeignKey, Text, JSON
-from sqlalchemy.dialects.sqlite import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
