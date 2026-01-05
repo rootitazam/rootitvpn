@@ -148,16 +148,32 @@ fi
 # Step 8: Start services
 echo -e "\n${BLUE}[8/8]${NC} ${YELLOW}Starting services with Docker Compose...${NC}"
 docker-compose down > /dev/null 2>&1 || true
-docker-compose up -d --build
+
+# Build images first
+echo -e "${YELLOW}Building Docker images (this may take a few minutes)...${NC}"
+docker-compose build --no-cache
+
+# Start services
+docker-compose up -d
 echo -e "${GREEN}✓ Services started${NC}"
 
 # Wait for services to be ready
-echo -e "\n${YELLOW}⏳ Waiting for services to start...${NC}"
-sleep 10
+echo -e "\n${YELLOW}⏳ Waiting for services to start (30 seconds)...${NC}"
+sleep 30
 
 # Check services status
 echo -e "\n${BLUE}📊 Service Status:${NC}"
 docker-compose ps
+
+# Check if Xray is healthy, if not show logs
+XRAY_STATUS=$(docker-compose ps xray | grep -o "unhealthy\|healthy\|starting" | head -1)
+if [ "$XRAY_STATUS" != "healthy" ]; then
+    echo -e "\n${YELLOW}⚠ Xray container is not healthy. Checking logs...${NC}"
+    echo -e "${BLUE}Xray logs (last 20 lines):${NC}"
+    docker-compose logs --tail=20 xray
+    echo -e "\n${YELLOW}⚠ If Xray is failing, you may need to check the config.json file${NC}"
+    echo -e "${YELLOW}⚠ The backend and frontend should still work${NC}"
+fi
 
 # Get admin password from .env
 ADMIN_PASSWORD=$(grep "ADMIN_PASSWORD=" .env | cut -d'=' -f2)

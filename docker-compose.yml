@@ -70,11 +70,11 @@ services:
     restart: unless-stopped
     command: ["xray", "-config", "/etc/xray/config.json"]
     healthcheck:
-      test: ["CMD", "xray", "version"]
+      test: ["CMD-SHELL", "xray version || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
 
 volumes:
   backend_data:
