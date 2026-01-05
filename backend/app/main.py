@@ -106,20 +106,16 @@ async def startup_event():
         if not reality_service.get_current_settings().get("public_key"):
             reality_service.rotate_reality_settings()
         
-        # Generate initial Xray config if file doesn't exist
-        if not config_path.exists():
-            logger.info("Xray config not found, generating initial config...")
-            routing_service = RoutingService()
-            xray_service = XrayService(reality_service, routing_service)
-            
-            users = db.query(User).filter(User.is_active == True).all()
-            xray_config = xray_service.generate_config(users)
-            if xray_service.save_config(xray_config):
-                logger.info("Initial Xray config generated successfully")
-            else:
-                logger.error("Failed to generate initial Xray config")
+        # Always regenerate Xray config to ensure it has latest Reality settings
+        routing_service = RoutingService()
+        xray_service = XrayService(reality_service, routing_service)
+        
+        users = db.query(User).filter(User.is_active == True).all()
+        xray_config = xray_service.generate_config(users)
+        if xray_service.save_config(xray_config):
+            logger.info("Xray config generated/updated successfully")
         else:
-            logger.info("Xray config already exists")
+            logger.error("Failed to generate/update Xray config")
     except Exception as e:
         logger.error(f"Error initializing config: {e}")
     finally:
