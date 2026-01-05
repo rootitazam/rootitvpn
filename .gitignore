@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+.vite/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+xray/logs/
+
+# Data
+backend/data/
+*.db-journal
+
+# GeoIP/Geosite (large files, should be downloaded separately)
+xray/geoip/*.dat
+xray/geosite/*.dat
+!xray/geoip/.gitkeep
+!xray/geosite/.gitkeep
+
+# Docker
+.dockerignore
+

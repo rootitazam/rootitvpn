@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rootitvpn-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./xray/config:/etc/xray
+      - backend_data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:///./data/rootitvpn.db
+      - XRAY_GRPC_ADDRESS=xray:8080
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-this}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - SERVER_IP=${SERVER_IP:-}
+    depends_on:
+      xray:
+        condition: service_healthy
+    networks:
+      - rootitvpn-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rootitvpn-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - rootitvpn-network
+    restart: unless-stopped
+
+  xray:
+    image: teddysun/xray:latest
+    container_name: rootitvpn-xray
+    ports:
+      - "443:443"
+      - "8080:8080"  # gRPC port
+    volumes:
+      - ./xray/config:/etc/xray
+      - ./xray/logs:/var/log/xray
+      - ./xray/geoip:/usr/local/share/xray/geoip
+      - ./xray/geosite:/usr/local/share/xray/geosite
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+    # Using bridge network instead of host mode for better Docker integration
+    # If you need host mode for better performance, uncomment the line below and remove networks section
+    # network_mode: "host"
+    networks:
+      - rootitvpn-network
+    restart: unless-stopped
+    command: ["xray", "-config", "/etc/xray/config.json"]
+    healthcheck:
+      test: ["CMD", "xray", "version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  backend_data:
+
+networks:
+  rootitvpn-network:
+    driver: bridge
+
